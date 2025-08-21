@@ -1,0 +1,17 @@
+name: HappyFilter
+version: '1.0-SNAPSHOT'
+main: xyz.n501yhappy.happyfilter.HappyFilter
+permissions:
+  happyfilter.bypass:
+    description: Bypass the filter.
+    default: false
+  happyfilter.admin:
+    description: Allows the user to manage the filter settings.
+    default: op
+commands:
+  happyfilter:
+    description: Manage the filter settings.
+    usage: /happyfilter [reload|help|enable|disable]
+    aliases:
+      - happyfilter
+      - hf

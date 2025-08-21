@@ -1,0 +1,11 @@
+xyz/n501yhappy/happyfilter/listeners/listenChat.class
+xyz/n501yhappy/happyfilter/utils/NGramTextGenerator.class
+xyz/n501yhappy/happyfilter/commands/command.class
+xyz/n501yhappy/happyfilter/utils/AhoCorasick$Hit.class
+xyz/n501yhappy/happyfilter/utils/AhoCorasick$Node.class
+xyz/n501yhappy/happyfilter/utils/Filtered.class
+xyz/n501yhappy/happyfilter/config/PluginConfigs.class
+xyz/n501yhappy/happyfilter/utils/Filter.class
+xyz/n501yhappy/happyfilter/utils/AhoCorasick$1.class
+xyz/n501yhappy/happyfilter/utils/AhoCorasick.class
+xyz/n501yhappy/happyfilter/HappyFilter.class
