@@ -34,7 +34,7 @@ public class command implements CommandExecutor, TabExecutor {
         }else {
             commandSender.sendMessage("§c未知命令! 输入/happyfilter help寻求帮助！");
         }
-        return false;
+        return true;
     }
     private void reloadConfig() {
         config = plugin.getConfig();

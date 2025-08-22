@@ -5,6 +5,7 @@ import org.bukkit.configuration.Configuration;
 import org.bukkit.permissions.Permission;
 import xyz.n501yhappy.happyfilter.utils.NGramTextGenerator;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,32 +23,31 @@ public class PluginConfigs {
     public static boolean enable_warning;
     public static String warning_message;
     public static List<String> replace_words;
-    public static Map<String, String> permissions;
+    public static Map<String, String> permissions = new HashMap<>();
     public static List<String> regex;
 
     public static boolean enable_plugin = true;
     public static void getPluginConfig(){
         config = plugin.getConfig();
         filter_words = config.getStringList("filter_words").stream().
-                map(StringEscapeUtils::escapeJava).collect(Collectors.toList());;
+                map(StringEscapeUtils::unescapeJava).collect(Collectors.toList());
         n_gram_texts = config.getStringList("filter_rules.ngram.words").stream()
-                .map(StringEscapeUtils::escapeJava).collect(Collectors.toList());;
+                .map(StringEscapeUtils::unescapeJava).collect(Collectors.toList());
         filter_level = config.getInt("filter_level");
         enable_ngram = config.getBoolean("filter_rules.ngram.enable_ngram");
         n = config.getInt("filter_rules.ngram.n");
         replace_words = config.getStringList("filter_rules.replace.replace_words").stream()
-                .map(StringEscapeUtils::escapeJava).collect(Collectors.toList());;
+                .map(StringEscapeUtils::unescapeJava).collect(Collectors.toList());
         enable_warning = config.getBoolean("warning.enabled");
         warning_message = config.getString("warning.message");
-        interference_characters = config.getCharacterList("filter_rules.interference_characters").stream()
-                .map(ch -> StringEscapeUtils.escapeJava(String.valueOf(ch)).charAt(0))
-                .collect(Collectors.toList());
+        interference_characters = config.getCharacterList("filter_rules.interference_characters");
 
+        permissions.clear(); // 清空map避免重复添加
         permissions.put("bypass", "happyfilter.bypass");
         permissions.put("admin", "happyfilter.admin");
 
         enable_plugin = config.getBoolean("enabled");
         regex = config.getStringList("filter_rules.regex").stream()
-                .map(StringEscapeUtils::escapeJava).collect(Collectors.toList());
+                .map(StringEscapeUtils::unescapeJava).collect(Collectors.toList());
     }
 }
