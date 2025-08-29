@@ -2,91 +2,114 @@ package xyz.n501yhappy.happyfilter.utils;
 
 import java.util.*;
 
-import static xyz.n501yhappy.happyfilter.config.PluginConfigs.filter_level;
-import static xyz.n501yhappy.happyfilter.config.PluginConfigs.interference_characters;
+import static xyz.n501yhappy.happyfilter.config.PluginConfig.interferenceChars;
 
 public class AhoCorasick {
+    private final Node root = new Node();
+    private List<Integer> oldPositions = new ArrayList<>();
+    private String processedText;
 
-    private final Node root = new Node();//根节点
-
-    private List<Integer> old_pos = new ArrayList<>();
-    private String processed_text;
-
-    private void Preprocess(String text){
-        StringBuilder new_text = new StringBuilder();
-        List<Integer> old_positions = new ArrayList<>();
-        Character c;
+    private void preprocess(String text) {
+        StringBuilder newText = new StringBuilder();
+        List<Integer> positions = new ArrayList<>();
+        
         for (int i = 0; i < text.length(); i++) {
-            c = text.charAt(i);
-            if (interference_characters.contains(c)){
-                new_text.append(c);
-                old_positions.add(i);
+            char c = text.charAt(i);
+            if (!interferenceChars.contains(c)) {
+                newText.append(c);
+                positions.add(i);
             }
         }
-        processed_text = new_text.toString();
-        old_pos = old_positions;
+        
+        processedText = newText.toString();
+        oldPositions = positions;
     }
 
-    // build tire
     public void insert(String word) {
-        int[] codePoints = word.codePoints().toArray();//弄成码点数组
-        Node cur = root;
+        int[] codePoints = word.codePoints().toArray();
+        Node current = root;
+        
         for (int cp : codePoints) {
-            cur = cur.next.computeIfAbsent(cp, c -> new Node());
+            current = current.next.computeIfAbsent(cp, k -> new Node());
         }
-        cur.len = word.length();
+        current.length = word.length();
     }
 
-    // bfs构建失败指针
     public void build() {
-        Queue<Node> q = new ArrayDeque<>();
+        Queue<Node> queue = new ArrayDeque<>();
         root.fail = root;
-        for (Node v : root.next.values()) {
-            v.fail = root;
-            q.add(v);
+        
+        for (Node node : root.next.values()) {
+            node.fail = root;
+            queue.add(node);
         }
-        while (!q.isEmpty()) {
-            Node u = q.poll();
-            int cp;
-            Node v,f;//值和失陪指针
-            for (Map.Entry<Integer, Node> e : u.next.entrySet()) {
-                cp = e.getKey();
-                v = e.getValue();
-                f = u.fail;
-                while (f != root && !f.next.containsKey(cp)) f = f.fail;
-                if (f.next.containsKey(cp)) f = f.next.get(cp);
-                v.fail = f;
-                q.add(v);
+        
+        while (!queue.isEmpty()) {
+            Node u = queue.poll();
+            
+            for (Map.Entry<Integer, Node> entry : u.next.entrySet()) {
+                int codePoint = entry.getKey();
+                Node v = entry.getValue();
+                Node fail = u.fail;
+                
+                while (fail != root && !fail.next.containsKey(codePoint)) {
+                    fail = fail.fail;
+                }
+                
+                if (fail.next.containsKey(codePoint)) {
+                    fail = fail.next.get(codePoint);
+                }
+                v.fail = fail;
+                queue.add(v);
             }
         }
     }
 
     public List<Hit> search(String text) {
-        processed_text = text;
-        if (filter_level > 1) Preprocess(text);
-        text = processed_text;
-        int[] textCp = text.codePoints().toArray();
-        List<Hit> res = new ArrayList<>();
-        Node cur = root;
-        for (int i = 0; i < textCp.length; i++) {
-            int cp = textCp[i];
-            while (cur != root && !cur.next.containsKey(cp)) cur = cur.fail;
-            if (cur.next.containsKey(cp)) cur = cur.next.get(cp);
-            for (Node p = cur; p != root && p.len > 0; p = p.fail) {
-                res.add(new Hit(old_pos.get(p.len - 1), old_pos.get(i)));
+        preprocess(text);
+        int[] textCodePoints = processedText.codePoints().toArray();
+        List<Hit> results = new ArrayList<>();
+        Node current = root;
+        
+        for (int i = 0; i < textCodePoints.length; i++) {
+            int cp = textCodePoints[i];
+            
+            while (current != root && !current.next.containsKey(cp)) {
+                current = current.fail;
+            }
+            
+            if (current.next.containsKey(cp)) {
+                current = current.next.get(cp);
+            }
+            
+            for (Node node = current; node != root && node.length > 0; node = node.fail) {
+                if (!oldPositions.isEmpty() && 
+                    (i - node.length + 1) >= 0 && 
+                    (i - node.length + 1) < oldPositions.size() && 
+                    i < oldPositions.size()) {
+                    
+                    int start = oldPositions.get(i - node.length + 1);
+                    int end = oldPositions.get(i);
+                    results.add(new Hit(start, end));
+                }
             }
         }
-        return res;
+        return results;
     }
+
     public static class Hit {
         public final int start;
-        public final int end;   //[start,end]
-        public Hit(int s, int e) { start = s; end = e; }
-        // @Override public String toString() { return "[" + start + "," + end + "]"; }
+        public final int end;
+
+        public Hit(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
     }
+
     private static class Node {
         Map<Integer, Node> next = new HashMap<>();
-        Node fail;//失陪指针
-        int len;
+        Node fail;
+        int length;
     }
 }

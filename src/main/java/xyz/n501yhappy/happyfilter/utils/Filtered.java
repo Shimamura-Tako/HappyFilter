@@ -4,37 +4,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Filtered {
-    private List<Integer> LIndexes = new ArrayList<>(), RIndexes = new ArrayList<>();
+    private List<Integer> leftIndexes = new ArrayList<>();
+    private List<Integer> rightIndexes = new ArrayList<>();
     private boolean isFiltered;
-    public Filtered(List<Integer> LIndexes, List<Integer> RIndexes,boolean isFiltered) {
-        this.LIndexes = LIndexes;
-        this.RIndexes = RIndexes;
+
+    public Filtered(List<Integer> leftIndexes, List<Integer> rightIndexes, boolean isFiltered) {
+        this.leftIndexes = leftIndexes;
+        this.rightIndexes = rightIndexes;
         this.isFiltered = isFiltered;
     }
 
-    public void setFiltered(boolean filtered) {
-        isFiltered = filtered;
+    public List<Integer> getLIndexes() {
+        return leftIndexes;
     }
 
-    public void setLIndexes(List<Integer> LIndexes) {
-        this.LIndexes = LIndexes;
-    }
-    public void setRIndexes(List<Integer> RIndexes) {
-        this.RIndexes = RIndexes;
-    }
-    public List<Integer> getLIndexes() {
-        return LIndexes;
-    }
     public List<Integer> getRIndexes() {
-        return RIndexes;
+        return rightIndexes;
     }
+
     public boolean isFiltered() {
         return isFiltered;
     }
-    public Filtered merge(Filtered filtered) {
-        this.LIndexes.addAll(filtered.getLIndexes());
-        this.RIndexes.addAll(filtered.getRIndexes());
-        this.isFiltered = filtered.isFiltered() || this.isFiltered;
+
+    public Filtered merge(Filtered other) {
+        this.leftIndexes.addAll(other.getLIndexes());
+        this.rightIndexes.addAll(other.getRIndexes());
+        this.isFiltered = other.isFiltered() || this.isFiltered;
         return this;
     }
 }

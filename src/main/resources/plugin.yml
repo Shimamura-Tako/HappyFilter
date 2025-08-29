@@ -1,3 +1,4 @@
+# file: plugin.yml
 name: HappyFilter
 version: '${project.version}'
 main: xyz.n501yhappy.happyfilter.HappyFilter

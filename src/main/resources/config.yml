@@ -1,5 +1,4 @@
 enabled: true
-filter_level: 1
 filter_words:
   - "cnm"
   - "孙笑川"
@@ -10,24 +9,15 @@ filter_words:
   - "特务"
 filter_rules:
   regex:
-    - "\\d+"
+    - "(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(?:\\.[a-zA-Z]{2,})?"
   interference_characters:
     - '/'
     - '\'
     - '.'
-  ngram:
-    enable_ngram: true
-    n: 2
-    words:
-      - "喵呜~"
-      - "喵呜"
-      - "喵"
-      - "呜"
   replace:
     replace_words:
       - "喵"
-      - "*"
 
 warning:
   enabled: true
-  message: "&c请勿发布敏感信息!"
+  message: "§c不要发布敏感信息!"
