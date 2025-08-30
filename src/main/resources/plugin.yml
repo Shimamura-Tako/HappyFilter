@@ -5,7 +5,7 @@ main: xyz.n501yhappy.happyfilter.HappyFilter
 permissions:
   happyfilter.bypass:
     description: Bypass the filter.
-    default: false
+    default: op
   happyfilter.admin:
     description: Allows the user to manage the filter settings.
     default: op

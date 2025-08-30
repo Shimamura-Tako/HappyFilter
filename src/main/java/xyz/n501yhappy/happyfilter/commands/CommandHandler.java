@@ -41,7 +41,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                 sender.sendMessage("§a插件已禁用");
                 break;
             default:
-                sender.sendMessage("§c未知命令! 输入/happyfilter help寻求帮助！");
+                sender.sendMessage("§c未知命令!");
         }
         return true;
     }

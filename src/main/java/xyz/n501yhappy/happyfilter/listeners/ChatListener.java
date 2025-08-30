@@ -19,11 +19,11 @@ public class ChatListener implements Listener {
 
     private static class PlayerMessage {
         final String message;
-        final long shijianchuo;
+        final long time;
 
-        PlayerMessage(String message, long shijianchuo) {
+        PlayerMessage(String message, long time) {
             this.message = message;
-            this.shijianchuo = shijianchuo;
+            this.time = time;
         }
     }
 
@@ -45,21 +45,25 @@ public class ChatListener implements Listener {
             if (enableWarning) {
                 player.sendMessage(warningMessage);
             }
+            messageHistory.remove(player);
+        } else {
+            updateMessageHistory(player, message);
         }
-
-        updateMessageHistory(player, message);
     }
 
     private String mergeHistory(Player player, String currentMessage) {
         List<PlayerMessage> history = messageHistory.computeIfAbsent(player, k -> new ArrayList<>());
         long now = System.currentTimeMillis();
-        history.removeIf(msg -> now - msg.shijianchuo > 2000);
+        history.removeIf(msg -> now - msg.time > 2000);
 
         StringBuilder merged = new StringBuilder();
         for (PlayerMessage msg : history) {
             merged.append(msg.message);
         }
-        return merged.append(currentMessage).toString();
+        merged.append(currentMessage);
+        messageHistory.remove(player);
+        messageHistory.put(player, history);//upd
+        return merged.toString();
     }
 
     private void updateMessageHistory(Player player, String message) {
@@ -67,6 +71,8 @@ public class ChatListener implements Listener {
         history.add(new PlayerMessage(message, System.currentTimeMillis()));
 
         if (history.size() > 20) history.remove(0);
+        messageHistory.remove(player);
+        messageHistory.put(player, history);
     }
 
     private String replaceFilteredWords(String message, String mergedMessage, Filtered result) {
@@ -80,8 +86,13 @@ public class ChatListener implements Listener {
             if (l >= startIndex) {
                 int localL = l - startIndex;
                 int localR = r - startIndex;
-
                 if (localL >= 0 && localR < message.length() && localL <= localR) {
+                    result_message.replace(localL, localR + 1, getReplace(localR - localL + 1));
+                }
+            } else if (r >= startIndex) {
+                int localL = 0;
+                int localR = r - startIndex;
+                if (localR >= 0 && localR < message.length()) {
                     result_message.replace(localL, localR + 1, getReplace(localR - localL + 1));
                 }
             }
@@ -89,6 +100,7 @@ public class ChatListener implements Listener {
 
         return result_message.toString();
     }
+
 
     private String getReplace(int length) {
         StringBuilder sb = new StringBuilder();
