@@ -1,4 +1,4 @@
-# HappyFilter - 违禁词插件！
+# [HappyFilter - 违禁词插件！](https://github.com/N501YHappy/HappyFilter)
 
 ## 🌟 主要功能
 
@@ -6,7 +6,7 @@
 - 不只是简单的关键词匹配，还能识别用特殊字符分隔的词汇（比如 c/n/m）
 - 支持正则表达式过滤，网址、广告统统拦下
 - 历史消息追踪功能，分次发送的违禁词也会被拦截～
-
+- 支持在控制台输出违禁词
 ### 🎭 灵活替换系统
 - 可自定义替换词汇，想换什么就换什么！
 - 在replace_words随机选择替换
@@ -17,23 +17,29 @@
 
 ## 🛠️ 配置文件详解
 ```yaml
-enabled: true #是否启用这个插件
-filter_words: #违禁词列表
+enabled: true # 是否启用过滤功能
+log_to_console: true # 是否将违禁词输出到控制台
+filter_words: # 违禁词列表
   - "cnm"
   - "sb"
-filter_rules:
-  regex: #正则表达式匹配
+  - "byd"
+  - "nm"
+filter_rules: # 违禁词规则
+  regex: # 正则
     - "(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(?:\\.[a-zA-Z]{2,})?"
-  interference_characters: #干扰字符
+  interference_characters: # 干扰字符
     - '/'
     - '\'
     - '.'
+    - ','
+    - '|'
+    - ' '
   replace:
-    replace_words: #被替换的的词汇
+    replace_words: # 替换词汇
       - "喵"
 
-warning:
-  enabled: true #是否启用警告功能
+warning: # 警告
+  enabled: true
   message: "§c不要发布敏感信息!"
 ```
 ## 🎮 命令使用指南
@@ -52,7 +58,7 @@ warning:
 
 1. **特殊字符转义**：配置文件中的regex部分要写成`\\`！
 2. **添加新词汇**：直接在`filter_words`下面添加新行就行！
-3. **性能优化**：只有在违禁词列表改变时才会重新构建匹配树！
+3. **性能优化**：只有在违禁词列表改变时才会重新构建树！
 4. **测试功能**：可以先用`disable`命令临时关闭，测试完再`enable`开启！
 
 ---
