@@ -12,7 +12,6 @@ permissions:
 commands:
   happyfilter:
     description: Manage the filter settings.
-    usage: /happyfilter [reload|help|enable|disable]
     aliases:
       - happyfilter
       - hf

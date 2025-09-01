@@ -1,12 +1,10 @@
 enabled: true
+log_to_console: true
 filter_words:
   - "cnm"
-  - "孙笑川"
-  - "傻逼"
-  - "傻B"
   - "sb"
-  - "叛徒"
-  - "特务"
+  - "byd"
+  - "nm"
 filter_rules:
   regex:
     - "(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(?:\\.[a-zA-Z]{2,})?"
@@ -14,6 +12,9 @@ filter_rules:
     - '/'
     - '\'
     - '.'
+    - ','
+    - '|'
+    - ' '
   replace:
     replace_words:
       - "喵"

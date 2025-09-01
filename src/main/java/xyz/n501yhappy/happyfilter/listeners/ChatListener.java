@@ -82,7 +82,9 @@ public class ChatListener implements Listener {
         for (int i = result.getLIndexes().size() - 1; i >= 0; i--) {
             int l = result.getLIndexes().get(i);
             int r = result.getRIndexes().get(i);
-
+            if (log_to_console){
+                System.out.println("[HappyFilter] " + "Left Index:" + l + " Right Index:" + r + mergedMessage.substring(l, r + 1));
+            }
             if (l >= startIndex) {
                 int localL = l - startIndex;
                 int localR = r - startIndex;

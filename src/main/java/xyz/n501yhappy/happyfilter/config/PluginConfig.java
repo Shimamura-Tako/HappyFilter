@@ -19,6 +19,7 @@ public class PluginConfig {
     public static List<String> replaceWords;
     public static Map<String, String> permissions = new HashMap<>();
     public static boolean isEnable = true;
+    public static boolean log_to_console = true;
 
     public static void loadConfig() {
         plugin.saveDefaultConfig();
@@ -39,8 +40,7 @@ public class PluginConfig {
         permissions.put("admin", "happyfilter.admin");
 
         isEnable = config.getBoolean("enabled");
-        regexPatterns = config.getStringList("filter_rules.regex").stream()
-                .map(StringEscapeUtils::unescapeJava)
-                .collect(Collectors.toList());
+        regexPatterns = config.getStringList("filter_rules.regex");
+        log_to_console = config.getBoolean("log_to_console");
     }
 }

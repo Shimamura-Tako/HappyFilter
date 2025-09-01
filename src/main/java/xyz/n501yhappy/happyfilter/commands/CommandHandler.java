@@ -48,6 +48,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
     private void reloadConfig() {
         plugin.reloadConfig();
+
         loadConfig();
     }
 
