@@ -89,3 +89,5 @@ warning:
 
 
 ![bstats](https://bstats.org/signatures/bukkit/HappyFilter.svg)
+
+bug提交: 1031612019 或在github提issue
