@@ -1,5 +1,6 @@
 package xyz.n501yhappy.happyfilter;
 
+import org.bstats.bukkit.Metrics;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 import xyz.n501yhappy.happyfilter.commands.CommandHandler;
@@ -13,6 +14,7 @@ public final class HappyFilter extends JavaPlugin {
     @Override
     public void onEnable() {
         plugin = this;
+        new Metrics(this, 27208);
         loadConfig();
         getServer().getPluginManager().registerEvents(new ChatListener(), this);
 

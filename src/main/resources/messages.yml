@@ -1,0 +1,17 @@
+prefix: "§7[§dHappy§bFilter§7] "
+commands:
+  reload_success: "§a配置已重载"
+  plugin_enabled: "§a插件已启用"
+  plugin_disabled: "§a插件已禁用"
+  unknown_command: "§c未知命令!"
+  no_permission: "§c你没有权限执行此命令!"
+  help:
+    header: "§aHappyFilter 帮助"
+    reload: "§a/happyfilter reload - 重载配置"
+    help: "§a/happyfilter help - 显示帮助"
+    enable: "§a/happyfilter enable - 启用违禁词拦截"
+    disable: "§a/happyfilter disable - 禁用违禁词拦截"
+
+log: "Left index: {l} Right index: {r} Word: {w}"
+warning:
+  message: "§c不要发布敏感信息!"

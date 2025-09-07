@@ -15,7 +15,10 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.hasPermission(permissions.get("admin"))) return false;
+        if (!sender.hasPermission(permissions.get("admin"))) {
+            sender.sendMessage(PREFIX + NO_PERMISSION);
+            return true;
+        }
 
         if (args.length < 1) {
             showHelp(sender);
@@ -25,7 +28,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         switch (args[0].toLowerCase()) {
             case "reload":
                 reloadConfig();
-                sender.sendMessage("§a配置已重载");
+                sender.sendMessage(PREFIX + RELOAD_SUCCESS);
                 break;
             case "help":
                 showHelp(sender);
@@ -33,19 +36,18 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             case "enable":
                 isEnable = true;
                 config.set("enabled", true);
-                sender.sendMessage("§a插件已启用");
+                sender.sendMessage(PREFIX + PLUGIN_ENABLED);
                 break;
             case "disable":
                 isEnable = false;
                 config.set("enabled", false);
-                sender.sendMessage("§a插件已禁用");
+                sender.sendMessage(PREFIX + PLUGIN_DISABLED);
                 break;
             default:
-                sender.sendMessage("§c未知命令!");
+                sender.sendMessage(PREFIX + UNKNOWN_COMMAND);
         }
         return true;
     }
-
     private void reloadConfig() {
         plugin.reloadConfig();
 
@@ -53,16 +55,16 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
     }
 
     private void showHelp(CommandSender sender) {
-        sender.sendMessage("§aHappyFilter 帮助");
-        sender.sendMessage("§a/happyfilter reload - 重载配置");
-        sender.sendMessage("§a/happyfilter help - 显示帮助");
-        sender.sendMessage("§a/happyfilter enable - 启用违禁词拦截");
-        sender.sendMessage("§a/happyfilter disable - 禁用违禁词拦截");
+        sender.sendMessage(PREFIX + HELP_HEADER);
+        sender.sendMessage(HELP_RELOAD);
+        sender.sendMessage(HELP_HELP);
+        sender.sendMessage(HELP_ENABLE);
+        sender.sendMessage(HELP_DISABLE);
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length == 1) {
+        if (args.length == 1 && sender.hasPermission(permissions.get("admin"))) {
             List<String> completions = new ArrayList<>();
             completions.add("reload");
             completions.add("help");

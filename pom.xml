@@ -6,7 +6,7 @@
 
   <groupId>xyz.n501yhappy</groupId>
   <artifactId>HappyFilter</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>HappyFilter</name>
@@ -18,7 +18,7 @@
 
   <build>
     <plugins>
-      <plugin>
+        <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
@@ -27,7 +27,7 @@
           <target>9</target>
         </configuration>
       </plugin>
-      <plugin>
+        <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.2.4</version>
@@ -40,6 +40,28 @@
           </execution>
         </executions>
       </plugin>
+        <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+            <relocations>
+                <relocation>
+                    <pattern>org.bstats</pattern>
+                    <!-- Replace this with your package! -->
+                    <shadedPattern>xyz.n501yhappy</shadedPattern>
+                </relocation>
+            </relocations>
+        </configuration>
+        <executions>
+            <execution>
+                <phase>package</phase>
+                <goals>
+                    <goal>shade</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
     </plugins>
     <resources>
       <resource>
@@ -66,6 +88,12 @@
           <artifactId>paper-api</artifactId>
           <version>1.12.2-R0.1-SNAPSHOT</version>
           <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.bstats</groupId>
+          <artifactId>bstats-bukkit</artifactId>
+          <version>3.0.2</version>
+          <scope>compile</scope>
       </dependency>
   </dependencies>
 </project>

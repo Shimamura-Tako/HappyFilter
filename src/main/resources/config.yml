@@ -21,4 +21,3 @@ filter_rules:
 
 warning:
   enabled: true
-  message: "§c不要发布敏感信息!"

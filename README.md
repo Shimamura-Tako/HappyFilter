@@ -7,6 +7,7 @@
 - 支持正则表达式过滤，网址、广告统统拦下
 - 历史消息追踪功能，分次发送的违禁词也会被拦截～
 - 支持在控制台输出违禁词
+- 支持所有自定义提示消息
 ### 🎭 灵活替换系统
 - 可自定义替换词汇，想换什么就换什么！
 - 在replace_words随机选择替换
@@ -17,6 +18,7 @@
 
 ## 🛠️ 配置文件详解
 ```yaml
+# config.yml
 enabled: true # 是否启用过滤功能
 log_to_console: true # 是否将违禁词输出到控制台
 filter_words: # 违禁词列表
@@ -42,6 +44,28 @@ warning: # 警告
   enabled: true
   message: "§c不要发布敏感信息!"
 ```
+
+```yaml
+# messages.yml
+prefix: "§7[§dHappy§bFilter§7] " #提示前缀
+commands:
+  reload_success: "§a配置已重载"
+  plugin_enabled: "§a插件已启用"
+  plugin_disabled: "§a插件已禁用"
+  unknown_command: "§c未知命令!"
+  no_permission: "§c你没有权限执行此命令!" 
+  help:
+    header: "§aHappyFilter 帮助"
+    reload: "§a/happyfilter reload - 重载配置"
+    help: "§a/happyfilter help - 显示帮助"
+    enable: "§a/happyfilter enable - 启用违禁词拦截"
+    disable: "§a/happyfilter disable - 禁用违禁词拦截"
+
+log: "Left index: {l} Right index: {r} Word: {w}" # 日志输出格式
+warning:
+  message: "§c不要发布敏感信息!" 
+
+```
 ## 🎮 命令使用指南
 
 - `/happyfilter reload` - 重新加载配置文件
@@ -63,3 +87,5 @@ warning: # 警告
 
 ---
 
+
+![bstats](https://bstats.org/signatures/bukkit/HappyFilter.svg)

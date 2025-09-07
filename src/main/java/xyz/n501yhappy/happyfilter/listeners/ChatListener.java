@@ -10,6 +10,7 @@ import xyz.n501yhappy.happyfilter.utils.Filtered;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static xyz.n501yhappy.happyfilter.HappyFilter.plugin;
 import static xyz.n501yhappy.happyfilter.config.PluginConfig.*;
 
 public class ChatListener implements Listener {
@@ -43,7 +44,7 @@ public class ChatListener implements Listener {
         if (result.isFiltered()) {
             event.setMessage(replaceFilteredWords(message, mergedMessage, result));
             if (enableWarning) {
-                player.sendMessage(warningMessage);
+                player.sendMessage(PREFIX +  WARNING_MESSAGE);
             }
             messageHistory.remove(player);
         } else {
@@ -83,7 +84,7 @@ public class ChatListener implements Listener {
             int l = result.getLIndexes().get(i);
             int r = result.getRIndexes().get(i);
             if (log_to_console){
-                System.out.println("[HappyFilter] " + "Left Index:" + l + " Right Index:" + r + " " + mergedMessage.substring(l, r + 1));
+                plugin.getLogger().info(LOG_INFO.replace("{l}", String.valueOf(l)).replace("{r}", String.valueOf(r)).replace("{w}", mergedMessage.substring(l, r + 1)));
             }
             if (l >= startIndex) {
                 int localL = l - startIndex;
