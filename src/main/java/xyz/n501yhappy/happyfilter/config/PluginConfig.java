@@ -3,6 +3,8 @@ package xyz.n501yhappy.happyfilter.config;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import net.md_5.bungee.api.ChatColor;
 import xyz.n501yhappy.happyfilter.HappyFilter;
 
 import java.io.File;
@@ -18,13 +20,19 @@ public class PluginConfig {
     //
     public static Configuration config;
     public static List<String> filterWords, regexPatterns;
-    public static List<Character> interferenceChars;
-    public static boolean enableWarning;
-    public static String warningMessage;
     public static List<String> replaceWords;
+    public static List<Character> interferenceChars;
+    public static Boolean anti_interference_enabled;
+    public static Boolean enableWarning;
+    public static Boolean to_lower;
+    public static Boolean isEnable = true;
+    public static Boolean log_to_console = true;
+    public static Boolean regex_enabled = true;
+    public static Boolean replace_enabled = true;
+    public static Boolean special_replace_enabled = true;
     public static Map<String, String> permissions = new HashMap<>();
-    public static boolean isEnable = true;
-    public static boolean log_to_console = true;
+    public static Map<String,String> special_replaces = new HashMap<>();
+    
     //message
     public static String PREFIX;
     public static String RELOAD_SUCCESS;
@@ -46,6 +54,7 @@ public class PluginConfig {
 
         loadMessagesFromConfig();
     }
+    
     private static void loadMessagesFromConfig() {
         PREFIX = messagesConfig.getString("prefix", "§a[HappyFilter] ");
         RELOAD_SUCCESS = messagesConfig.getString("commands.reload_success", "§a配置已重载");
@@ -70,18 +79,48 @@ public class PluginConfig {
                 .map(StringEscapeUtils::unescapeJava)
                 .collect(Collectors.toList());
 
+        to_lower = config.getBoolean("filter_rules.to_lower", true);
+        regexPatterns = config.getStringList("filter_rules.regex.regexes");
+        
+        regex_enabled = config.getBoolean("filter_rules.regex.enable", true);
+        anti_interference_enabled = config.getBoolean("filter_rules.anti_interference.enabled", false);
+        interferenceChars = config.getCharacterList("filter_rules.anti_interference.interference_characters");
+        
+        replace_enabled = config.getBoolean("filter_rules.replace.enable", true);
         replaceWords = config.getStringList("filter_rules.replace.replace_words").stream()
                 .map(StringEscapeUtils::unescapeJava)
                 .collect(Collectors.toList());
-
-        enableWarning = config.getBoolean("warning.enabled");
-        interferenceChars = config.getCharacterList("filter_rules.interference_characters");
-
+        
+        special_replace_enabled = config.getBoolean("filter_rules.special_replace.enable", true);
+        loadSpecialReplaces();
+        enableWarning = config.getBoolean("warning.enabled", true);
         permissions.put("bypass", "happyfilter.bypass");
         permissions.put("admin", "happyfilter.admin");
-
-        isEnable = config.getBoolean("enabled");
-        regexPatterns = config.getStringList("filter_rules.regex");
-        log_to_console = config.getBoolean("log_to_console");
+        isEnable = config.getBoolean("enabled", true);
+        log_to_console = config.getBoolean("log_to_console", true);
+        if (log_to_console) {
+            plugin.getLogger().info(ChatColor.GREEN + "配置加载完成！");
+            plugin.getLogger().info(ChatColor.LIGHT_PURPLE +"特殊替换词数量: " + special_replaces.size());
+            plugin.getLogger().info(ChatColor.BLUE +"过滤词数量: " + filterWords.size());
+            plugin.getLogger().info(ChatColor.YELLOW +"正则模式数量: " + regexPatterns.size());
+        }
+    }
+    
+    private static void loadSpecialReplaces() {
+        special_replaces.clear();
+        if (config.contains("filter_rules.replace.special_replace") && 
+            config.isConfigurationSection("filter_rules.replace.special_replace")) {
+            
+            for (String key : config.getConfigurationSection("filter_rules.replace.special_replace").getKeys(false)) {
+                String value = config.getString("filter_rules.replace.special_replace." + key);
+                if (value != null) {
+                    String unescapedValue = StringEscapeUtils.unescapeJava(value);
+                    special_replaces.put(key, unescapedValue);
+                }
+            }
+        }
+    }
+    public static void reload() {
+        loadConfig();
     }
 }

@@ -2,114 +2,80 @@ package xyz.n501yhappy.happyfilter.utils;
 
 import java.util.*;
 
-import static xyz.n501yhappy.happyfilter.config.PluginConfig.interferenceChars;
-
 public class AhoCorasick {
-    private final Node root = new Node();
-    private List<Integer> oldPositions = new ArrayList<>();
-    private String processedText;
-
-    private void preprocess(String text) {
-        StringBuilder newText = new StringBuilder();
-        List<Integer> positions = new ArrayList<>();
-        
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (!interferenceChars.contains(c)) {
-                newText.append(c);
-                positions.add(i);
-            }
-        }
-        
-        processedText = newText.toString();
-        oldPositions = positions;
-    }
-
     public void insert(String word) {
-        int[] codePoints = word.codePoints().toArray();
-        Node current = root;
-        
-        for (int cp : codePoints) {
-            current = current.next.computeIfAbsent(cp, k -> new Node());
+        Node cur = root;
+        for (char c : word.toCharArray()) {
+            cur = cur.next.computeIfAbsent(c, k -> new Node());
         }
-        current.length = word.length();
+        cur.word = word;
     }
 
     public void build() {
-        Queue<Node> queue = new ArrayDeque<>();
-        root.fail = root;
-        
-        for (Node node : root.next.values()) {
-            node.fail = root;
-            queue.add(node);
+        Queue<Node> q = new ArrayDeque<>();
+        root.fail = null;
+        for (Node ch : root.next.values()) {
+            ch.fail = root;
+            q.add(ch);
         }
-        
-        while (!queue.isEmpty()) {
-            Node u = queue.poll();
-            
-            for (Map.Entry<Integer, Node> entry : u.next.entrySet()) {
-                int codePoint = entry.getKey();
-                Node v = entry.getValue();
-                Node fail = u.fail;
-                
-                while (fail != root && !fail.next.containsKey(codePoint)) {
-                    fail = fail.fail;
+        while (!q.isEmpty()) {
+            Node u = q.poll();
+            for (Map.Entry<Character, Node> e : u.next.entrySet()) {
+                char c = e.getKey();
+                Node v = e.getValue();
+
+                Node f = u.fail;
+                while (f != null && !f.next.containsKey(c)) {
+                    f = f.fail;
                 }
-                
-                if (fail.next.containsKey(codePoint)) {
-                    fail = fail.next.get(codePoint);
-                }
-                v.fail = fail;
-                queue.add(v);
+                v.fail = (f == null) ? root : f.next.get(c);
+                q.add(v);
             }
         }
     }
-
     public List<Hit> search(String text) {
-        preprocess(text);
-        int[] textCodePoints = processedText.codePoints().toArray();
-        List<Hit> results = new ArrayList<>();
-        Node current = root;
-        
-        for (int i = 0; i < textCodePoints.length; i++) {
-            int cp = textCodePoints[i];
-            
-            while (current != root && !current.next.containsKey(cp)) {
-                current = current.fail;
+        List<Hit> res = new ArrayList<>();
+        Node cur = root;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            while (cur != root && !cur.next.containsKey(c)) {
+                cur = cur.fail;
             }
-            
-            if (current.next.containsKey(cp)) {
-                current = current.next.get(cp);
+            if (cur.next.containsKey(c)) {
+                cur = cur.next.get(c);
             }
-            
-            for (Node node = current; node != root && node.length > 0; node = node.fail) {
-                if (!oldPositions.isEmpty() && 
-                    (i - node.length + 1) >= 0 && 
-                    (i - node.length + 1) < oldPositions.size() && 
-                    i < oldPositions.size()) {
-                    
-                    int start = oldPositions.get(i - node.length + 1);
-                    int end = oldPositions.get(i);
-                    results.add(new Hit(start, end));
-                }
+            for (Node p = cur; p != root && p.word != null; p = p.fail) {
+                int len = p.word.length();
+                res.add(new Hit(i - len + 1, i + 1));
             }
         }
-        return results;
+        return res;
+    }
+    
+    private static class Node {
+        Map<Character, Node> next = new HashMap<>();
+        Node fail;
+        String word;
     }
 
-    public static class Hit {
+    private final Node root = new Node();
+    public static class Hit {//记住这是左闭右开喵！不要写错了喵！
         public final int start;
         public final int end;
-
-        public Hit(int start, int end) {
-            this.start = start;
-            this.end = end;
-        }
+        public Hit(int s, int e) { this.start = s; this.end = e; }
+        //@Override public String toString() { return "[" + start + "," + end + ")"; }
     }
-
-    private static class Node {
-        Map<Integer, Node> next = new HashMap<>();
-        Node fail;
-        int length;
-    }
+    
+    // public static void main(String[] args) {
+    //     AhoCorasick ac = new AhoCorasick();
+    //     ac.insert("fuck");
+    //     ac.insert("sb");
+    //     ac.insert("loser");
+    //     ac.insert("fw");
+    //     ac.build();
+    //     List<Hit> ans = ac.search("fuckyou,sbfw");
+    //     for (Hit h : ans) {
+    //         System.out.println(h);
+    //     }
+    // }
 }

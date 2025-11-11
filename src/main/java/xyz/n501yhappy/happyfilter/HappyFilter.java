@@ -13,8 +13,7 @@ public final class HappyFilter extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        plugin = this;
-        new Metrics(this, 27208);
+        plugin = this; new Metrics(this, 27208);
         loadConfig();
         getServer().getPluginManager().registerEvents(new ChatListener(), this);
 

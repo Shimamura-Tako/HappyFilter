@@ -6,29 +6,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Filter {
-    private AhoCorasick acAutomaton = new AhoCorasick();
+    private AhoCorasick AhoC = new AhoCorasick();
     private List<String> filterList = new ArrayList<>();
 
-    public void buildAcAutomaton(List<String> filters) {
+    public void buildAC(List<String> filters) {
         this.filterList = new ArrayList<>(filters);
-        acAutomaton = new AhoCorasick();
-
-        for (String filter : filters) {
-            acAutomaton.insert(filter);
-        }
-        acAutomaton.build();
+        this.AhoC = new AhoCorasick();
+        for (String filter : filters) AhoC.insert(filter);
+        AhoC.build();
     }
 
     public Filtered filterText(String message, List<String> filters) {
         if (!isFilterListEqual(this.filterList, filters)) {
-            buildAcAutomaton(filters);
+            buildAC(filters);
         }
 
         List<Integer> leftIndexes = new ArrayList<>();
         List<Integer> rightIndexes = new ArrayList<>();
-        List<AhoCorasick.Hit> hits = acAutomaton.search(message);
+        List<AhoCorasick.Hit> hits = AhoC.search(message);
 
-        for (AhoCorasick.Hit hit : hits) {
+        for (AhoCorasick.Hit hit : hits) {//[)
             leftIndexes.add(hit.start);
             rightIndexes.add(hit.end);
         }

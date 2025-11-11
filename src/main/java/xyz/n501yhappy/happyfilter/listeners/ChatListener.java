@@ -9,6 +9,7 @@ import xyz.n501yhappy.happyfilter.utils.Filtered;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 import static xyz.n501yhappy.happyfilter.HappyFilter.plugin;
 import static xyz.n501yhappy.happyfilter.config.PluginConfig.*;
@@ -21,7 +22,6 @@ public class ChatListener implements Listener {
     private static class PlayerMessage {
         final String message;
         final long time;
-
         PlayerMessage(String message, long time) {
             this.message = message;
             this.time = time;
@@ -30,28 +30,62 @@ public class ChatListener implements Listener {
 
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
+        // 检测前置条件部分
         if (!isEnable) return;
-
         Player player = event.getPlayer();
         if (player.hasPermission(permissions.get("bypass"))) return;
-
+        
+        // 消息合并
         String message = event.getMessage();
         String mergedMessage = mergeHistory(player, message);
-
-        Filtered result = filter.filterText(mergedMessage, filterWords)
-                .merge(filter.filterRegex(mergedMessage, regexPatterns));
-
+        
+        // 干扰字符处理
+        String solvedMessage = mergedMessage;  // slovedMessage是干净的消息
+        if (anti_interference_enabled) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < mergedMessage.length(); i++) {
+                char c = mergedMessage.charAt(i);
+                if (!interferenceChars.contains(c)) {
+                    sb.append(c);
+                }
+            }
+            solvedMessage = sb.toString();
+        }
+        //特殊替换
+        if (special_replace_enabled) {
+            solvedMessage = applySpecialReplace(solvedMessage, player);
+        }
+        
+        Filtered result = filter.filterText(solvedMessage, filterWords);
+        if (regex_enabled) {
+            result = result.merge(filter.filterRegex(solvedMessage, regexPatterns));
+        }
+        
+        // 过滤处理
         if (result.isFiltered()) {
-            event.setMessage(replaceFilteredWords(message, mergedMessage, result));
+            event.setMessage(AsolveMessages(message, mergedMessage, result, player));
             if (enableWarning) {
-                player.sendMessage(PREFIX +  WARNING_MESSAGE);
+                player.sendMessage(PREFIX + WARNING_MESSAGE);
             }
             messageHistory.remove(player);
         } else {
             updateMessageHistory(player, message);
         }
     }
-
+    private String applySpecialReplace(String message, Player player) {
+        if (special_replaces.isEmpty()) return message;
+        
+        String result = message;
+        List<String> keys = new ArrayList<>(special_replaces.keySet());
+        keys.sort((a, b) -> Integer.compare(b.length(), a.length()));
+        
+        for (String key : keys) {
+            String regex = "\\b" + Pattern.quote(key) + "\\b";
+            result = result.replaceAll("(?i)" + regex, special_replaces.get(key));
+        }
+        
+        return result;
+    }
     private String mergeHistory(Player player, String currentMessage) {
         List<PlayerMessage> history = messageHistory.computeIfAbsent(player, k -> new ArrayList<>());
         long now = System.currentTimeMillis();
@@ -62,40 +96,43 @@ public class ChatListener implements Listener {
             merged.append(msg.message);
         }
         merged.append(currentMessage);
-        messageHistory.remove(player);
-        messageHistory.put(player, history);//upd
         return merged.toString();
     }
 
     private void updateMessageHistory(Player player, String message) {
         List<PlayerMessage> history = messageHistory.computeIfAbsent(player, k -> new ArrayList<>());
         history.add(new PlayerMessage(message, System.currentTimeMillis()));
-
-        if (history.size() > 20) history.remove(0);
-        messageHistory.remove(player);
-        messageHistory.put(player, history);
+        while (history.size() > 20) history.remove(0);
     }
 
-    private String replaceFilteredWords(String message, String mergedMessage, Filtered result) {
-        int startIndex = mergedMessage.length() - message.length();
-        StringBuilder result_message = new StringBuilder(message);
+    private String AsolveMessages(String message, String mergedMessage, Filtered result,Player player) {
+        int startIndex = mergedMessage.length() - message.length();//本条消息在消息历史中的index
+        StringBuilder result_message = new StringBuilder(message);//返回结果
 
         for (int i = result.getLIndexes().size() - 1; i >= 0; i--) {
             int l = result.getLIndexes().get(i);
             int r = result.getRIndexes().get(i);
-            if (log_to_console){
-                plugin.getLogger().info(LOG_INFO.replace("{l}", String.valueOf(l)).replace("{r}", String.valueOf(r)).replace("{w}", mergedMessage.substring(l, r + 1)));
+            
+            if (log_to_console && isValidIndex(l, r, mergedMessage.length())) {
+                String filteredWord = mergedMessage.substring(l, Math.min(r + 1, mergedMessage.length()));
+                plugin.getLogger().info(LOG_INFO
+                .replace("{l}", String.valueOf(l))
+                    .replace("{r}", String.valueOf(r))
+                    .replace("{w}", filteredWord)
+                    .replace("{player}",player.getName()));
             }
+            
+            //替换
             if (l >= startIndex) {
                 int localL = l - startIndex;
                 int localR = r - startIndex;
-                if (localL >= 0 && localR < message.length() && localL <= localR) {
+                if (isValidIndex(localL, localR, message.length()) && localL <= localR) {
                     result_message.replace(localL, localR + 1, getReplace(localR - localL + 1));
                 }
             } else if (r >= startIndex) {
                 int localL = 0;
                 int localR = r - startIndex;
-                if (localR >= 0 && localR < message.length()) {
+                if (isValidIndex(localL, localR, message.length()) && localR >= 0) {
                     result_message.replace(localL, localR + 1, getReplace(localR - localL + 1));
                 }
             }
@@ -103,9 +140,12 @@ public class ChatListener implements Listener {
 
         return result_message.toString();
     }
-
+    private boolean isValidIndex(int start, int end, int maxLength) {
+        return start >= 0 && end >= start && start < maxLength && end < maxLength;
+    }
 
     private String getReplace(int length) {
+        if (!replace_enabled || length <= 0) return "";
         StringBuilder sb = new StringBuilder();
         while (sb.length() < length) {
             String word = replaceWords.get(random.nextInt(replaceWords.size()));

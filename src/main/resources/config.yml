@@ -6,18 +6,35 @@ filter_words:
   - "byd"
   - "nm"
 filter_rules:
+  to_lower: true
   regex:
+    enable: true
+    regexes:
     - "(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(?:\\.[a-zA-Z]{2,})?"
-  interference_characters:
-    - '/'
-    - '\'
-    - '.'
-    - ','
-    - '|'
-    - ' '
+  anti_interference:
+    enabled: true
+    interference_characters:
+      - '/'
+      - '\'
+      - '.'
+      - ','
+      - '|'
+      - ' '
   replace:
+    enable: true
     replace_words:
       - "喵"
+  special_replace:
+    enable: true
+    matches:
+      "sb": "笨蛋"
+      "fw": "杂鱼"
+      "fuck": "love"
+      "L": "love"
+      "cnm" : "meow!"
 
 warning:
   enabled: true
+
+#如果有bug请在github交issus(https://github.com/N501YHappy/HappyFilter/issues),或加入QQ群1031612019
+#有bug不要憋着不说QAQ
