@@ -51,9 +51,8 @@ public class ChatListener implements Listener {
             }
             solvedMessage = sb.toString();
         }
-        //特殊替换
-        if (special_replace_enabled) {
-            solvedMessage = applySpecialReplace(solvedMessage, player);
+        if (to_lower) {
+            solvedMessage = solvedMessage.toLowerCase();
         }
         
         Filtered result = filter.filterText(solvedMessage, filterWords);
@@ -71,20 +70,6 @@ public class ChatListener implements Listener {
         } else {
             updateMessageHistory(player, message);
         }
-    }
-    private String applySpecialReplace(String message, Player player) {
-        if (special_replaces.isEmpty()) return message;
-        
-        String result = message;
-        List<String> keys = new ArrayList<>(special_replaces.keySet());
-        keys.sort((a, b) -> Integer.compare(b.length(), a.length()));
-        
-        for (String key : keys) {
-            String regex = "\\b" + Pattern.quote(key) + "\\b";
-            result = result.replaceAll("(?i)" + regex, special_replaces.get(key));
-        }
-        
-        return result;
     }
     private String mergeHistory(Player player, String currentMessage) {
         List<PlayerMessage> history = messageHistory.computeIfAbsent(player, k -> new ArrayList<>());
