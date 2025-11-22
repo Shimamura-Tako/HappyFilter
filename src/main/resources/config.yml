@@ -29,9 +29,6 @@ filter_rules:
     matches:
       "sb": "笨蛋"
       "fw": "杂鱼"
-      "fuck": "love"
-      "L": "love"
-      "cnm" : "meow!"
 
 warning:
   enabled: true

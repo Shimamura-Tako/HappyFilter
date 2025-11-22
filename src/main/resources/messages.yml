@@ -12,6 +12,6 @@ commands:
     enable: "§a/happyfilter enable - 启用违禁词拦截"
     disable: "§a/happyfilter disable - 禁用违禁词拦截"
 
-log: "Left index: {l} Right index: {r} Word: {w} Player: {player}"
+log: "Word: {w} Player: {player}"
 warning:
   message: "§c不要发布敏感信息!"

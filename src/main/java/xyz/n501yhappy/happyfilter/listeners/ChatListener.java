@@ -4,14 +4,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+
+import net.md_5.bungee.api.ChatColor;
+import xyz.n501yhappy.happyfilter.HappyFilter;
 import xyz.n501yhappy.happyfilter.utils.Filter;
 import xyz.n501yhappy.happyfilter.utils.Filtered;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
-import static xyz.n501yhappy.happyfilter.HappyFilter.plugin;
 import static xyz.n501yhappy.happyfilter.config.PluginConfig.*;
 
 public class ChatListener implements Listener {
@@ -41,11 +42,13 @@ public class ChatListener implements Listener {
         
         // 干扰字符处理
         String solvedMessage = mergedMessage;  // slovedMessage是干净的消息
+        List<Integer> indexMapping = new ArrayList<>();indexMapping.clear();
         if (anti_interference_enabled) {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < mergedMessage.length(); i++) {
                 char c = mergedMessage.charAt(i);
                 if (!interferenceChars.contains(c)) {
+                    indexMapping.add(i);
                     sb.append(c);
                 }
             }
@@ -62,7 +65,7 @@ public class ChatListener implements Listener {
         
         // 过滤处理
         if (result.isFiltered()) {
-            event.setMessage(AsolveMessages(message, mergedMessage, result, player));
+            event.setMessage(AsolveMessages(message, mergedMessage, result, player,indexMapping,solvedMessage));
             if (enableWarning) {
                 player.sendMessage(PREFIX + WARNING_MESSAGE);
             }
@@ -71,6 +74,7 @@ public class ChatListener implements Listener {
             updateMessageHistory(player, message);
         }
     }
+    
     private String mergeHistory(Player player, String currentMessage) {
         List<PlayerMessage> history = messageHistory.computeIfAbsent(player, k -> new ArrayList<>());
         long now = System.currentTimeMillis();
@@ -90,46 +94,52 @@ public class ChatListener implements Listener {
         while (history.size() > 20) history.remove(0);
     }
 
-    private String AsolveMessages(String message, String mergedMessage, Filtered result,Player player) {
-        int startIndex = mergedMessage.length() - message.length();//本条消息在消息历史中的index
-        StringBuilder result_message = new StringBuilder(message);//返回结果
-
-        for (int i = result.getLIndexes().size() - 1; i >= 0; i--) {
-            int l = result.getLIndexes().get(i);
-            int r = result.getRIndexes().get(i);
-            
-            if (log_to_console && isValidIndex(l, r, mergedMessage.length())) {
-                String filteredWord = mergedMessage.substring(l, Math.min(r + 1, mergedMessage.length()));
-                plugin.getLogger().info(LOG_INFO
-                .replace("{l}", String.valueOf(l))
-                    .replace("{r}", String.valueOf(r))
-                    .replace("{w}", filteredWord)
+    private String AsolveMessages(String message, String mergedMessage, Filtered result, Player player, List<Integer> indexMapping, String solvedMessage) {
+        StringBuilder ret_message = new StringBuilder(message);
+        int startIndex = mergedMessage.length() - message.length();
+        
+        // player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Original: " + message);
+        // player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Merged: " + mergedMessage);
+        // player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Solved: " + solvedMessage);
+        // player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - IndexMapping: " + indexMapping);
+        
+        for (int i = 0; i < result.getLIndexes().size(); i++) {
+            int l_index = result.getLIndexes().get(i);
+            int r_index = result.getRIndexes().get(i);
+            int len = r_index - l_index;
+            String bad_word = solvedMessage.substring(l_index, r_index);
+            String replaces = getReplace(len, bad_word);
+            if (log_to_console) {
+                HappyFilter.plugin.getLogger().info(LOG_INFO
+                    .replace("{w}", bad_word)
                     .replace("{player}",player.getName()));
             }
-            
-            //替换
-            if (l >= startIndex) {
-                int localL = l - startIndex;
-                int localR = r - startIndex;
-                if (isValidIndex(localL, localR, message.length()) && localL <= localR) {
-                    result_message.replace(localL, localR + 1, getReplace(localR - localL + 1));
-                }
-            } else if (r >= startIndex) {
-                int localL = 0;
-                int localR = r - startIndex;
-                if (isValidIndex(localL, localR, message.length()) && localR >= 0) {
-                    result_message.replace(localL, localR + 1, getReplace(localR - localL + 1));
+            //player.sendMessage(ChatColor.YELLOW + "Debug - BadWord: " + bad_word + " at [" + l_index + "," + r_index + ") -> " + replaces);
+            for (int solvedPos = l_index; solvedPos < r_index; solvedPos++) {
+                int relativePos = solvedPos - l_index;
+                if (relativePos >= replaces.length()) break;
+                if (solvedPos < indexMapping.size()) {
+                    int originalPos = indexMapping.get(solvedPos);
+                    if (originalPos < ret_message.length()) {
+                        ret_message.setCharAt(originalPos, replaces.charAt(relativePos));
+                        // player.sendMessage(ChatColor.GREEN + "Debug - Replace: solvedPos=" + solvedPos + 
+                        //                 " -> originalPos=" + originalPos + 
+                        //                 " with '" + replaces.charAt(relativePos) + "'");
+                    }
                 }
             }
         }
-
-        return result_message.toString();
-    }
-    private boolean isValidIndex(int start, int end, int maxLength) {
-        return start >= 0 && end >= start && start < maxLength && end < maxLength;
+        
+        //player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Result: " + ret_message.toString());
+        return ret_message.toString();
     }
 
-    private String getReplace(int length) {
+    private String getReplace(int length,String bad_word) {
+        if (SP_K.contains(bad_word)) {
+            if (special_replaces.get(bad_word).length() == bad_word.length()) {
+                return special_replaces.get(bad_word);
+            }
+        }
         if (!replace_enabled || length <= 0) return "";
         StringBuilder sb = new StringBuilder();
         while (sb.length() < length) {
