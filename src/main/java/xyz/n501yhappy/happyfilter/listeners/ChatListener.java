@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
 import net.md_5.bungee.api.ChatColor;
 import xyz.n501yhappy.happyfilter.HappyFilter;
@@ -98,33 +99,35 @@ public class ChatListener implements Listener {
         StringBuilder ret_message = new StringBuilder(message);
         int startIndex = mergedMessage.length() - message.length();
         
-        // player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Original: " + message);
-        // player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Merged: " + mergedMessage);
-        // player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Solved: " + solvedMessage);
-        // player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - IndexMapping: " + indexMapping);
-        
-        for (int i = 0; i < result.getLIndexes().size(); i++) {
-            int l_index = result.getLIndexes().get(i);
-            int r_index = result.getRIndexes().get(i);
-            int len = r_index - l_index;
-            String bad_word = solvedMessage.substring(l_index, r_index);
-            String replaces = getReplace(len, bad_word);
+        player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Original: " + message);
+        player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Merged: " + mergedMessage);
+        player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Solved: " + solvedMessage);
+        player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - IndexMapping: " + indexMapping);
+        player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - result: " + result.toString());
+        for (int i = 0; i < result.getRIndexes().size(); i++) {
+            int l_index = result.getLIndexes().get(i);//2
+            int r_index = result.getRIndexes().get(i);//5
+            int len = r_index - l_index;//3
+            String bad_word = solvedMessage.substring(l_index, r_index);//cnm
+            String replaces = getReplace(len, bad_word);//喵喵喵
+            // player.sendMessage(ChatColor.GREEN + "Debug - Replace: " +replaces);
             if (log_to_console) {
                 HappyFilter.plugin.getLogger().info(LOG_INFO
                     .replace("{w}", bad_word)
                     .replace("{player}",player.getName()));
             }
             //player.sendMessage(ChatColor.YELLOW + "Debug - BadWord: " + bad_word + " at [" + l_index + "," + r_index + ") -> " + replaces);
-            for (int solvedPos = l_index; solvedPos < r_index; solvedPos++) {
+            for (int solvedPos = l_index; solvedPos < r_index; solvedPos++) {//2-4
                 int relativePos = solvedPos - l_index;
                 if (relativePos >= replaces.length()) break;
                 if (solvedPos < indexMapping.size()) {
-                    int originalPos = indexMapping.get(solvedPos);
+                    int originalPos = Math.max(0,indexMapping.get(solvedPos)-startIndex);
+                    player.sendMessage(ChatColor.GRAY + "OP: " + originalPos);
                     if (originalPos < ret_message.length()) {
                         ret_message.setCharAt(originalPos, replaces.charAt(relativePos));
-                        // player.sendMessage(ChatColor.GREEN + "Debug - Replace: solvedPos=" + solvedPos + 
-                        //                 " -> originalPos=" + originalPos + 
-                        //                 " with '" + replaces.charAt(relativePos) + "'");
+                        player.sendMessage(ChatColor.GREEN + "Debug - Replace: solvedPos=" + solvedPos + 
+                                        " -> originalPos=" + originalPos + 
+                                        " with '" + replaces.charAt(relativePos) + "'");
                     }
                 }
             }
@@ -147,5 +150,9 @@ public class ChatListener implements Listener {
             sb.append(word.substring(0, Math.min(length - sb.length(), word.length())));
         }
         return sb.toString();
+    }
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        messageHistory.remove(event.getPlayer());
     }
 }

@@ -32,4 +32,23 @@ public class Filtered {
         this.isFiltered = other.isFiltered() || this.isFiltered;
         return this;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Filtered{");
+        sb.append("isFiltered=").append(isFiltered);
+        sb.append(", ranges=[");
+        
+        for (int i = 0; i < leftIndexes.size(); i++) {
+            if (i > 0) sb.append(", ");
+            sb.append("[").append(leftIndexes.get(i))
+              .append(",").append(rightIndexes.get(i))
+              .append(")");
+        }
+        
+        sb.append("], rangesCount=").append(leftIndexes.size());
+        sb.append("}");
+        return sb.toString();
+    }
 }
