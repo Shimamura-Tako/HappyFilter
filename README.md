@@ -2,58 +2,65 @@
 
 ## 🌟 主要功能
 
-### 🛡️ 超智能违禁词过滤
+### 🛡️ 人性化的违禁词过滤
 - 不只是简单的关键词匹配，还能识别用特殊字符分隔的词汇（比如 c/n/m）
 - 支持正则表达式过滤，网址、广告统统拦下
 - 历史消息追踪功能，分次发送的违禁词也会被拦截～
+- 可以自定义特殊替换
+- 可以检测大小写
 - 支持在控制台输出违禁词
 - 支持所有自定义提示消息
-### 🎭 灵活替换系统
-- 可自定义替换词汇，想换什么就换什么！
-- 在replace_words随机选择替换
 
-### ⚡ 高性能(存疑) 算法加持
-- AC自动机算法，用了这个算法打OI可以AK！
-- 异步处理聊天事件
 
 ## 🛠️ 配置文件详解
 ```yaml
-# config.yml
-enabled: true # 是否启用过滤功能
-log_to_console: true # 是否将违禁词输出到控制台
-filter_words: # 违禁词列表
+enabled: true
+log_to_console: true #记录罪行到控制台
+filter_words:
   - "cnm"
   - "sb"
   - "byd"
   - "nm"
-filter_rules: # 违禁词规则
-  regex: # 正则
-    - "(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(?:\\.[a-zA-Z]{2,})?"
-  interference_characters: # 干扰字符
-    - '/'
-    - '\'
-    - '.'
-    - ','
-    - '|'
-    - ' '
+filter_rules:
+  to_lower: true #大小写检测
+  regex:
+    enable: true
+    regexes:
+    - "(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}(?:\\.[a-zA-Z]{2,})?" #这里要转义
+  anti_interference:
+    enabled: true
+    interference_characters: #过滤的字符喵
+      - '/'
+      - '\'
+      - '.'
+      - ','
+      - '|'
+      - ' '
   replace:
-    replace_words: # 替换词汇
+    enable: true
+    replace_words:
       - "喵"
+  special_replace: #把制定的词语替换为另一个词语
+    enable: true
+    matches:  #注意特殊替换的两个词长度要一样
+      "sb": "笨蛋"
+      "fw": "杂鱼"
 
-warning: # 警告
+warning: #给玩家提醒
   enabled: true
-  message: "§c不要发布敏感信息!"
+
+#如果有bug请在github交issus(https://github.com/N501YHappy/HappyFilter/issues),或加入QQ群1031612019
+#有bug不要憋着不说QAQ
 ```
 
 ```yaml
-# messages.yml
-prefix: "§7[§dHappy§bFilter§7] " #提示前缀
+prefix: "§7[§dHappy§bFilter§7]"  #插件提示的前缀
 commands:
   reload_success: "§a配置已重载"
   plugin_enabled: "§a插件已启用"
   plugin_disabled: "§a插件已禁用"
   unknown_command: "§c未知命令!"
-  no_permission: "§c你没有权限执行此命令!" 
+  no_permission: "§c你没有权限执行此命令!"
   help:
     header: "§aHappyFilter 帮助"
     reload: "§a/happyfilter reload - 重载配置"
@@ -61,9 +68,10 @@ commands:
     enable: "§a/happyfilter enable - 启用违禁词拦截"
     disable: "§a/happyfilter disable - 禁用违禁词拦截"
 
-log: "Left index: {l} Right index: {r} Word: {w}" # 日志输出格式
+log: "Word: {w} Player: {player}"
 warning:
-  message: "§c不要发布敏感信息!" 
+  message: "§c不要发布敏感信息!"
+
 
 ```
 ## 🎮 命令使用指南
@@ -90,4 +98,4 @@ warning:
 
 ![bstats](https://bstats.org/signatures/bukkit/HappyFilter.svg)
 
-bug提交: 1031612019 或在github提issue
+## bug提交: 1031612019 或在github提issue,欢迎Pull Request 谢谢你喵
