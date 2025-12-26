@@ -99,47 +99,63 @@ public class ChatListener implements Listener {
         int startIndex = mergedMessage.length() - message.length();
         StringBuilder retMessage = new StringBuilder(message);
         
-        // 从后往前处理，避免位置偏移问题
-        List<ReplacementInfo> replacements = new ArrayList<>();
-        
+        // 分别处理特殊屏蔽词和普通屏蔽词
         for (int i = 0; i < result.getRIndexes().size(); i++) {
             int l_index = result.getLIndexes().get(i);
             int r_index = result.getRIndexes().get(i);
             String bad_word = solvedMessage.substring(l_index, r_index);
             
             // 检查是否为特殊屏蔽词
-            String replacement = getReplacement(bad_word, r_index - l_index);
-            
-            // 计算在原始消息中的起始和结束位置
-            int originalStart = -1;
-            int originalEnd = -1;
-            
-            if (l_index < indexMapping.size()) {
-                originalStart = indexMapping.get(l_index) - startIndex;
-            }
-            
-            if (r_index > 0 && r_index - 1 < indexMapping.size()) {
-                originalEnd = indexMapping.get(r_index - 1) - startIndex + 1;
-            }
-            
-            // 如果找到有效位置，添加替换信息
-            if (originalStart >= 0 && originalEnd > originalStart && originalEnd <= message.length()) {
-                replacements.add(new ReplacementInfo(originalStart, originalEnd, replacement, bad_word));
-            }
-        }
-        
-        // 按起始位置从大到小排序，从后往前替换
-        replacements.sort((a, b) -> Integer.compare(b.start, a.start));
-        
-        for (ReplacementInfo rep : replacements) {
-            if (rep.start >= 0 && rep.start < retMessage.length() && rep.end <= retMessage.length()) {
-                retMessage.replace(rep.start, rep.end, rep.replacement);
+            if (SP_K.contains(bad_word)) {
+                // 特殊屏蔽词：整体替换
+                String replacement = special_replaces.get(bad_word);
+                if (replacement != null && !replacement.isEmpty()) {
+                    // 计算在原始消息中的起始和结束位置
+                    int originalStart = -1;
+                    int originalEnd = -1;
+                    
+                    if (l_index < indexMapping.size()) {
+                        originalStart = indexMapping.get(l_index) - startIndex;
+                    }
+                    
+                    if (r_index > 0 && r_index - 1 < indexMapping.size()) {
+                        originalEnd = indexMapping.get(r_index - 1) - startIndex + 1;
+                    }
+                    
+                    // 如果找到有效位置，进行整体替换
+                    if (originalStart >= 0 && originalEnd > originalStart && originalEnd <= retMessage.length()) {
+                        retMessage.replace(originalStart, originalEnd, replacement);
+                        
+                        // 记录日志
+                        if (log_to_console) {
+                            HappyFilter.plugin.getLogger().info(LOG_INFO
+                                .replace("{w}", bad_word)
+                                .replace("{player}", player.getName()));
+                        }
+                    }
+                }
+            } else {
+                // 普通屏蔽词：使用原来的逐字符替换逻辑
+                String replacement = getReplace(r_index - l_index, bad_word);
                 
                 // 记录日志
                 if (log_to_console) {
                     HappyFilter.plugin.getLogger().info(LOG_INFO
-                        .replace("{w}", rep.badWord)
+                        .replace("{w}", bad_word)
                         .replace("{player}", player.getName()));
+                }
+                
+                // 逐字符替换
+                for (int solvedPos = l_index; solvedPos < r_index; solvedPos++) {
+                    int relativePos = solvedPos - l_index;
+                    if (relativePos >= replacement.length()) break;
+                    
+                    if (solvedPos < indexMapping.size()) {
+                        int originalPos = indexMapping.get(solvedPos) - startIndex;
+                        if (originalPos >= 0 && originalPos < retMessage.length()) {
+                            retMessage.setCharAt(originalPos, replacement.charAt(relativePos));
+                        }
+                    }
                 }
             }
         }
@@ -147,41 +163,18 @@ public class ChatListener implements Listener {
         return retMessage.toString();
     }
 
-    private String getReplacement(String badWord, int originalLength) {
-        // 优先检查特殊屏蔽词
-        if (SP_K.contains(badWord)) {
-            String specialReplace = special_replaces.get(badWord);
-            if (specialReplace != null && !specialReplace.isEmpty()) {
-                return specialReplace;
-            }
-        }
+    private String getReplace(int length, String bad_word) {
+        // 特殊屏蔽词已经在solveMessages中处理，这里只处理普通屏蔽词
+        
+        if (!replace_enabled || length <= 0) return "";
         
         // 普通替换逻辑
-        if (!replace_enabled || originalLength <= 0) {
-            // 如果不启用替换，则用*号填充
-            return "*".repeat(originalLength);
-        }
-        
         StringBuilder sb = new StringBuilder();
-        while (sb.length() < originalLength) {
+        while (sb.length() < length) {
             String word = replaceWords.get(random.nextInt(replaceWords.size()));
-            sb.append(word.substring(0, Math.min(originalLength - sb.length(), word.length())));
+            sb.append(word.substring(0, Math.min(length - sb.length(), word.length())));
         }
         return sb.toString();
-    }
-
-    private static class ReplacementInfo {
-        final int start;
-        final int end;
-        final String replacement;
-        final String badWord;
-        
-        ReplacementInfo(int start, int end, String replacement, String badWord) {
-            this.start = start;
-            this.end = end;
-            this.replacement = replacement;
-            this.badWord = badWord;
-        }
     }
     
     @EventHandler
