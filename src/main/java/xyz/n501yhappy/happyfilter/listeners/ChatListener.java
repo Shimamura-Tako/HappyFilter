@@ -101,13 +101,13 @@ public class ChatListener implements Listener {
         int startIndex = mergedMessage.length() - message.length();
         
         // Debug 信息
-        if (enableDebug) {
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Original: " + message);
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Merged: " + mergedMessage);
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Solved: " + solvedMessage);
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - IndexMapping: " + indexMapping);
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - result: " + result.toString());
-        }
+        // if (enableDebug) {
+        //     player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Original: " + message);
+        //     player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Merged: " + mergedMessage);
+        //     player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Solved: " + solvedMessage);
+        //     player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - IndexMapping: " + indexMapping);
+        //     player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - result: " + result.toString());
+        // }
         
         // 收集所有需要替换的位置和对应的替换字符
         for (int i = 0; i < result.getRIndexes().size(); i++) {
@@ -123,10 +123,10 @@ public class ChatListener implements Listener {
                     .replace("{player}", player.getName()));
             }
             
-            if (enableDebug) {
-                player.sendMessage(ChatColor.YELLOW + "Debug - BadWord: " + bad_word + 
-                                 " at [" + l_index + "," + r_index + ") -> " + replaces);
-            }
+            // if (enableDebug) {
+            //     player.sendMessage(ChatColor.YELLOW + "Debug - BadWord: " + bad_word + 
+            //                      " at [" + l_index + "," + r_index + ") -> " + replaces);
+            // }
             
             // 为每个字符位置映射替换字符
             for (int replaceIndex = 0; replaceIndex < replaces.length(); replaceIndex++) {
@@ -150,9 +150,9 @@ public class ChatListener implements Listener {
             }
         }
         
-        if (enableDebug) {
-            player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Result: " + ret_message.toString());
-        }
+        // if (enableDebug) {
+        //     player.sendMessage(ChatColor.LIGHT_PURPLE + "Debug - Result: " + ret_message.toString());
+        // }
         
         return ret_message.toString();
     }
